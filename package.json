@@ -1,36 +1,48 @@
 {
-  "name": "easy-js",
+  "name": "comet-backend",
   "version": "1.0.0",
-  "description": "Node.JS, express starter-pack.",
+  "description": "Free and Open Source messanger app built with Node.js, Express, Socket.IO, JWTokens, MongoDB and Redis. (BACK-END, Part 2)",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/patrykcieszkowski/easy-js.git"
+    "url": "git+https://github.com/patrykcieszkowski/comet-backend.git"
   },
   "keywords": [
     "express",
-    "blog",
-    "simple",
-    "nodejs"
+    "nodejs",
+    "socket.io",
+    "jwtokens",
+    "mongodb",
+    "redis"
   ],
+  "engines": {
+    "node": "7.0.0"
+  },
   "author": "Patryk Cieszkowski",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/patrykcieszkowski/easy-js/issues"
+    "url": "https://github.com/patrykcieszkowski/comet-backeend/issues"
   },
-  "homepage": "https://github.com/patrykcieszkowski/easy-js#readme",
+  "homepage": "https://github.com/patrykcieszkowski/comet-backend#readme",
   "dependencies": {
     "async": "^2.1.2",
     "bcrypt": "^0.8.7",
     "body-parser": "^1.15.2",
+    "connect-redis": "^3.1.0",
+    "cors": "^2.8.1",
     "ejs": "^2.5.2",
     "ejs-mate": "^2.3.0",
     "express": "^4.14.0",
-    "express-session": "^1.14.2",
+    "jsonwebtoken": "^7.2.1",
+    "jwt-decode": "^2.1.0",
+    "moment": "^2.17.1",
     "mongoose": "^4.6.7",
-    "node-bbcode": "^1.0.0"
+    "mongoose-int32": "^0.2.0",
+    "node-bbcode": "^1.0.0",
+    "node-uuid": "^1.4.7",
+    "redis": "^2.6.3"
   }
 }
