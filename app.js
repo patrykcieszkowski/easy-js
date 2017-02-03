@@ -1,22 +1,17 @@
 'use strict'
 const express = require('express')
 const app = module.exports = express()
-const server = require('http').createServer(app)
+const session = require('express-session')
 const bodyParser = require('body-parser')
-const cors = require('cors')
 const async = require('async')
 
-const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379'
-const redisClient = require('redis').createClient(redisUrl)
-const io = require('socket.io')(server)
-const jwt = require("jsonwebtoken")
-const mongodbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/comet'
-const mongoose = require('mongoose').connect(mongodbUri)
-mongoose.Promise = global.Promise
+// const mongoose = require('mongoose')
+// mongoose.connect('mongodb://localhost:27017/blog')
+// mongoose.Promise = global.Promise
 
-process.env.JWT_SECRET = process.env.JWT_SECRET || 'test'
-process.env.PORT = process.env.PORT || 3000
+app.locals.config = {title: 'easy-js'}
 
+let port = process.env.PORT || 3000
 let routes = require(__dirname + '/config/routes')
 let middlewares = {
   config: require(__dirname + '/config/middleware'),
@@ -30,40 +25,24 @@ let middlewares = {
 global.models = require(__dirname + '/api/models')
 global.logic = require(__dirname + '/api/logic')
 global.controllers = require(__dirname + '/api/controllers')
-global.io = io
-global.redisClient = redisClient
 
-app.locals.config = {title: 'comet'}
 //views
 app.engine('ejs', require('ejs-mate'))
 app.set('view engine', 'ejs')
 app.set('views', __dirname + '/views')
 
-app.use(cors({origin: '*'}))
 //assets
 app.use(express.static(__dirname + '/assets'))
-
-io.use((socket, next) =>
-{
-  let token = socket.handshake.query.auth_token
-
-  global.logic.user.verifyJWTToken(token, (err, session) =>
-  {
-    if (!session)
-    {
-      socket.emit('unauthorised')
-      socket.disconnect()
-      return
-    }
-
-    socket.emit('authorised')
-    return next()
-  })
-})
-
+//session
+app.use(session({
+  secret: 'JmytReTYkPeG',
+  resave: false,
+  saveUninitialized: false,
+}))
 //body
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
+
 
 async.series([
   function(cb)
@@ -126,46 +105,11 @@ async.series([
   },
   function(cb)
   {
-    if (!routes.socket) return cb()
-    async.forEachOf(routes.socket, (route, key, routeCb) =>
-    {
-      if (typeof route === 'string')
-      {
-        /* make sure route is in valid format. Stop if it doesn't specify either controler file or route function */
-        if (route.indexOf('.') < 0) return routeCb()
-        let _routeContr = route.split('.')
-        if (!global.controllers[_routeContr[0]] || !global.controllers[_routeContr[0]][_routeContr[1]])
-        {
-          return routeCb()
-        }
-
-        return assignFuncToRoute(global.controllers[_routeContr[0]][_routeContr[1]])
-      }
-      else if (typeof route === 'function')
-      {
-        return assignFuncToRoute(route)
-      }
-      else
-      {
-        console.error("Error: socket route '"+key+"' is invalid.")
-        return routeCb()
-      }
-
-      function assignFuncToRoute(func)
-      {
-        io.on(key, func)
-        return routeCb()
-      }
-    }, () =>
-    {
-      return cb()
-    })
-  },
-  function(cb)
-  {
-    if (!routes.rest) return cb()
+    /* ----------------------------
+            ROUTING SYSTEM
+      ---------------------------- */
     let allowedReqTypes = ['get', 'post', 'put', 'all']
-    async.forEachOf(routes.rest, (route, key, routeCb) =>
+    async.forEachOf(routes, (route, key, routeCb) =>
     {
       let mwList = middlewares.global.path
       /* find request type. Default = get */
@@ -257,8 +201,8 @@ async.series([
   }
 ], () =>
 {
-  server.listen(process.env.PORT, () =>
+  app.listen(port, () =>
   {
-    console.log("Listening on port ", process.env.PORT);
+    console.log("Listening on port ", port);
   })
 })

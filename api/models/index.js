@@ -10,9 +10,7 @@ async.forEachOf(fs.readdirSync(path), (file, key, cb) =>
   if (file.match(/\.js$/) !== null && file !== 'index.js')
   {
     let name = file.replace('.js', '')
-    let model = require(path + file)(Schema)
-    let modelSchema = new Schema(model.attributes, {collection: name, id: false})
-    modelSchema.set('toJSON')
+    let modelSchema = new Schema(require(path + file)(Schema), {collection: name})
     exports[name] = mongoose.model(name, modelSchema)
   }
   return cb()
